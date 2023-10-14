@@ -9,7 +9,11 @@ class DefineLastVersionTask extends RootTask{
     def checkLastVersion() {
         def lastVersion = gitService.getLastVersion()
 
-        logger.log(LogLevel.LIFECYCLE, "Last version - ${lastVersion}")
+        if(lastVersion.isEmpty()) {
+            logger.log(LogLevel.WARN, "You have no tags")
+        } else {
+            logger.log(LogLevel.LIFECYCLE, "Last version - ${lastVersion}")
+        }
     }
 
 }

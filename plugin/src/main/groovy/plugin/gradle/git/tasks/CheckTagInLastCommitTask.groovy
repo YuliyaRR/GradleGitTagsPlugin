@@ -12,6 +12,9 @@ class CheckTagInLastCommitTask extends RootTask{
 
         if (res) {
             logger.log(LogLevel.WARN, "You have tag in the last commit, so you can't assign another tag")
+        } else {
+            logger.log(LogLevel.LIFECYCLE, "You don't have tag in the last commit")
+
         }
     }
 }

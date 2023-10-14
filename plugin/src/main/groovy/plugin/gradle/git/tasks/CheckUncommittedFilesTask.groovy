@@ -12,7 +12,13 @@ class CheckUncommittedFilesTask extends RootTask{
 
         if (uncFiles != 0) {
             def lastVersion = gitService.lastVersion
-            logger.log(LogLevel.WARN, String.format(PluginConstants.LOG_MESSAGE_FOR_UNCOMMITTED_FILES, lastVersion, uncFiles))
+
+            if(lastVersion.isEmpty()) {
+                logger.log(LogLevel.WARN, String.format(PluginConstants.LOG_MESSAGE_FOR_UNCOMMITTED_FILES_WITHOUT_VERSION, uncFiles))
+            } else {
+                logger.log(LogLevel.WARN, String.format(PluginConstants.LOG_MESSAGE_FOR_UNCOMMITTED_FILES, lastVersion, uncFiles))
+            }
+
         } else {
             logger.log(LogLevel.LIFECYCLE, "You have no uncommitted changes")
         }
