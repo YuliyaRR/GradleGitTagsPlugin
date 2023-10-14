@@ -6,8 +6,8 @@ import org.gradle.api.tasks.TaskAction
 class CheckAnyCommitExistTask extends RootTask {
 
     @TaskAction
-    def isAnyCommitExistInRepo() {
-        def isCommitExistInRepo = gitService.isAnyCommitExistInRepo()
+    def doesAnyCommitExistInRepo() {
+        def isCommitExistInRepo = gitService.doesAnyCommitExistInRepo()
         this.addResult(isCommitExistInRepo)
 
         if (!isCommitExistInRepo) {
