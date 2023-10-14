@@ -5,9 +5,10 @@ package plugin.gradle.git
 
 import org.gradle.api.Project
 import org.gradle.api.Plugin
+import plugin.gradle.git.tasks.AssignAndPublishNewVersionTask
 import plugin.gradle.git.tasks.AssignNewVersionTask
 import plugin.gradle.git.tasks.CheckAnyCommitExistTask
-import plugin.gradle.git.tasks.CheckGitExistTask
+import plugin.gradle.git.tasks.CheckGitAndLocalRepoExistTask
 import plugin.gradle.git.tasks.CheckTagInLastCommitTask
 import plugin.gradle.git.tasks.CheckUncommittedFilesTask
 import plugin.gradle.git.tasks.DefineLastVersionTask
@@ -19,47 +20,52 @@ class GradleGitPlugin implements Plugin<Project> {
 
     void apply(Project project) {
 
-        def checkGitIsInstalled = project.tasks.register("checkGitIsInstalled", CheckGitExistTask).get()
+        def checkGitIsInstalledAndLocalRepoExist = project.tasks.register("checkGitIsInstalledAndLocalRepoExist", CheckGitAndLocalRepoExistTask).get()
 
         def checkCommitExistsInRepo = project.tasks.register("checkCommitExistInRepo", CheckAnyCommitExistTask).get()
-        checkCommitExistsInRepo.dependsOn(checkGitIsInstalled)
-        checkCommitExistsInRepo.setOnlyIf(it -> (boolean) checkGitIsInstalled.getResult())
+        checkCommitExistsInRepo.dependsOn(checkGitIsInstalledAndLocalRepoExist)
+        checkCommitExistsInRepo.setOnlyIf(it -> (boolean) checkGitIsInstalledAndLocalRepoExist.getResult())
 
         def checkTagInLastCommit = project.tasks.register("checkLastCommitHaveTag", CheckTagInLastCommitTask.class).get()
-        checkTagInLastCommit.dependsOn(checkGitIsInstalled, checkCommitExistsInRepo)
-        checkTagInLastCommit.setOnlyIf(it -> (boolean) checkGitIsInstalled.getResult()
+        checkTagInLastCommit.dependsOn(checkGitIsInstalledAndLocalRepoExist, checkCommitExistsInRepo)
+        checkTagInLastCommit.setOnlyIf(it -> (boolean) checkGitIsInstalledAndLocalRepoExist.getResult()
                                             && (boolean) checkCommitExistsInRepo.getResult())
 
         def defineLastVersion = project.tasks.register("defineLastVersion", DefineLastVersionTask.class).get()
-        defineLastVersion.dependsOn(checkGitIsInstalled, checkCommitExistsInRepo)
-        defineLastVersion.setOnlyIf(it -> (boolean) checkGitIsInstalled.getResult()
+        defineLastVersion.dependsOn(checkGitIsInstalledAndLocalRepoExist, checkCommitExistsInRepo)
+        defineLastVersion.setOnlyIf(it -> (boolean) checkGitIsInstalledAndLocalRepoExist.getResult()
                                         && (boolean) checkCommitExistsInRepo.getResult())
 
         def checkUncommittedFiles = project.tasks.register("checkUncommittedFiles", CheckUncommittedFilesTask.class).get()
-        checkUncommittedFiles.dependsOn(checkGitIsInstalled, checkCommitExistsInRepo)
-        checkUncommittedFiles.setOnlyIf(it -> (boolean) checkGitIsInstalled.getResult()
+        checkUncommittedFiles.dependsOn(checkGitIsInstalledAndLocalRepoExist, checkCommitExistsInRepo)
+        checkUncommittedFiles.setOnlyIf(it -> (boolean) checkGitIsInstalledAndLocalRepoExist.getResult()
                                             && (boolean) checkCommitExistsInRepo.getResult())
 
         def defineCurrentBranch = project.tasks.register("defineCurrentBranch", DefineCurrentBranchTask.class).get()
-        defineCurrentBranch.dependsOn(checkGitIsInstalled)
-        defineCurrentBranch.setOnlyIf(it -> (boolean) checkGitIsInstalled.getResult())
+        defineCurrentBranch.dependsOn(checkGitIsInstalledAndLocalRepoExist)
+        defineCurrentBranch.setOnlyIf(it -> (boolean) checkGitIsInstalledAndLocalRepoExist.getResult())
 
         def defineNextVersion = project.tasks.register("defineNextVersion", DefineNextVersionTask.class).get()
-        defineNextVersion.dependsOn(checkGitIsInstalled, checkCommitExistsInRepo, checkTagInLastCommit)
-        defineNextVersion.setOnlyIf(it -> (boolean) checkGitIsInstalled.getResult()
+        defineNextVersion.dependsOn(checkGitIsInstalledAndLocalRepoExist, checkCommitExistsInRepo, checkTagInLastCommit)
+        defineNextVersion.setOnlyIf(it -> (boolean) checkGitIsInstalledAndLocalRepoExist.getResult()
                                         && (boolean) checkCommitExistsInRepo.getResult()
                                         && !(boolean) checkTagInLastCommit.getResult())
 
         def assignNewVersion = project.tasks.register("assignNewVersion", AssignNewVersionTask.class).get()
-        assignNewVersion.dependsOn(checkGitIsInstalled, checkCommitExistsInRepo, checkTagInLastCommit, checkUncommittedFiles)
-        assignNewVersion.setOnlyIf(it -> (boolean) checkGitIsInstalled.getResult()
+        assignNewVersion.dependsOn(checkGitIsInstalledAndLocalRepoExist, checkCommitExistsInRepo, checkTagInLastCommit, checkUncommittedFiles)
+        assignNewVersion.setOnlyIf(it -> (boolean) checkGitIsInstalledAndLocalRepoExist.getResult()
                 && (boolean) checkCommitExistsInRepo.getResult()
                 && !(boolean) checkTagInLastCommit.getResult()
                 && (boolean) checkUncommittedFiles.getResult())
 
         def publishNewVersion = project.tasks.register("publishNewVersion", PublishNewVersionTask.class).get()
-        publishNewVersion.dependsOn(checkGitIsInstalled, checkCommitExistsInRepo, assignNewVersion)
-        publishNewVersion.setOnlyIf(it -> (boolean) checkGitIsInstalled.getResult()
+        publishNewVersion.dependsOn(checkGitIsInstalledAndLocalRepoExist, checkCommitExistsInRepo)
+        publishNewVersion.setOnlyIf(it -> (boolean) checkGitIsInstalledAndLocalRepoExist.getResult()
+                && (boolean) checkCommitExistsInRepo.getResult())
+
+        def assignAndPublishNewVersion = project.tasks.register("assignAndPublishNewVersion", AssignAndPublishNewVersionTask.class).get()
+        assignAndPublishNewVersion.dependsOn(checkGitIsInstalledAndLocalRepoExist, checkCommitExistsInRepo, assignNewVersion)
+        assignAndPublishNewVersion.setOnlyIf(it -> (boolean) checkGitIsInstalledAndLocalRepoExist.getResult()
                 && (boolean) checkCommitExistsInRepo.getResult()
                 && !(boolean) assignNewVersion.state.skipped
                 && (boolean) assignNewVersion.getResult())
