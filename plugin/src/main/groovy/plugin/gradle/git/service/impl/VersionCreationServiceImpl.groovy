@@ -11,14 +11,18 @@ class VersionCreationServiceImpl implements IVersionCreationService{
     }
 
     def createNewVersionInDevOrQABranch(String curVersion, int newMinorVersion) {
-        builder.append(curVersion, 0, (int) curVersion.indexOf(".") + 1)
+        def newVer = builder.append(curVersion, 0, (int) curVersion.indexOf(".") + 1)
                 .append(newMinorVersion).toString()
+        builder.setLength(0)
+        return newVer
     }
 
     @Override
     def createNewVersionInMasterBranch(String curVersion, int newMajorVersion) {
-        return builder.append(curVersion[0])
+        def newVer = builder.append(curVersion[0])
                 .append(newMajorVersion).append(".0").toString()
+        builder.setLength(0)
+        return newVer
     }
 
     @Override
@@ -26,6 +30,8 @@ class VersionCreationServiceImpl implements IVersionCreationService{
         oldVersion.contains("-")
                 ? builder.append(oldVersion, 0, (int) oldVersion.indexOf("-"))
                 : builder.append(oldVersion)
-        return builder.append(postfix).toString()
+        def newVer = builder.append(postfix).toString()
+        builder.setLength(0)
+        return newVer
     }
 }
