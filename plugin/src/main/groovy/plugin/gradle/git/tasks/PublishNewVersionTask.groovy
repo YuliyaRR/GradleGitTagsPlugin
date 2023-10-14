@@ -8,13 +8,22 @@ class PublishNewVersionTask extends RootTask{
 
     @TaskAction
     def publishNewVersion() {
-        String newVersion = gitService.lastVersion
-        def res = gitService.publishNewVersion(newVersion)
+        def doesRemoteRepoExist = gitService.doesRemoteRepoExist()
 
-        if(res) {
-            logger.log(LogLevel.LIFECYCLE, "New version ${newVersion} is published in remote repo")
+        if (!doesRemoteRepoExist) {
+            logger.log(LogLevel.WARN, "You don't have a remote repo to push new version")
         } else {
-            logger.log(LogLevel.ERROR, "Something went wrong")
+            String newVersion = gitService.lastVersion
+            if(newVersion.isEmpty()) {
+                logger.log(LogLevel.WARN, "You have no tags to publish")
+            } else {
+                def res = gitService.publishNewVersion(newVersion)
+                if (res) {
+                    logger.log(LogLevel.LIFECYCLE, "New version ${newVersion} is published in remote repo")
+                } else {
+                    logger.log(LogLevel.ERROR, "Something went wrong and version wasn't published in remote repo")
+                }
+            }
         }
     }
 

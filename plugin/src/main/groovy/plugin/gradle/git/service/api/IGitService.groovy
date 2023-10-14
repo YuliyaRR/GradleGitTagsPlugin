@@ -2,7 +2,8 @@ package plugin.gradle.git.service.api
 
 interface IGitService {
     boolean isGitInstalled()
-    boolean isAnyCommitExistInRepo()
+    boolean doesRemoteRepoExist()
+    boolean doesAnyCommitExistInRepo()
     boolean doesLastCommitHaveTag()
     String getLastVersion()
     int checkUncommittedFiles()

@@ -17,12 +17,22 @@ class GitServiceImpl implements IGitService{
     boolean isGitInstalled() {
         def process = PluginConstants.GIT_COMMAND_IS_GIT_INSTALLED.execute()
         def exit = process.waitFor()
-
         return exit == 0
     }
 
+    /*
+    Метод проверяет существует ли удаленный репозиторий
+    return - true, если репозиторий существует, иначе - false
+    * */
     @Override
-    boolean isAnyCommitExistInRepo() {
+    boolean doesRemoteRepoExist() {
+        def remoteRepo = PluginConstants.GIT_COMMAND_FOR_CHECKING_REMOTE_REPO.execute().text
+
+        return !remoteRepo.isEmpty()
+    }
+
+    @Override
+    boolean doesAnyCommitExistInRepo() {
         def lastCommit = PluginConstants.GIT_COMMAND_DOES_ANY_COMMIT_EXIST.execute().text
 
         return !lastCommit.isEmpty()
@@ -44,7 +54,7 @@ class GitServiceImpl implements IGitService{
         def tags = PluginConstants.GIT_COMMAND_FOR_CHECKING_TAGS.execute().text
 
         if (tags.length() == 0) {
-            lastVersion = "v0.0"
+            lastVersion = ""
         } else {
             def arr = tags.split("\n")
             lastVersion = Arrays.stream(arr)
